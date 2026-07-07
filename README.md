@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icon.png" alt="LimitlessEnchants Icon" width="128" height="128">
+</p>
+
 # LimitlessEnchants
 
 A lightweight, high-performance Paper/Purpur plugin designed to bypass vanilla Minecraft enchantment level limits and anvil repair restrictions. Enhance your server's gear progression by allowing players to combine and level up enchantments beyond their vanilla limits!
