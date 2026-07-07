@@ -19,6 +19,16 @@ public final class LimitlessEnchants extends JavaPlugin {
     private boolean useDefaultMaxForUnlisted;
     private final Map<String, Integer> customMaxLevels = new HashMap<>();
 
+    private boolean allowUnsafeCombinations;
+    private boolean effectsEnabled;
+    private String effectSound;
+    private String effectParticles;
+    private String msgPrefix;
+    private String msgReloadSuccess;
+    private String msgNoPermission;
+    private String msgHelpHeader;
+    private String msgHelpReload;
+
     @Override
     public void onEnable() {
         // Save default config if not exists
@@ -66,6 +76,18 @@ public final class LimitlessEnchants extends JavaPlugin {
                 }
             }
         }
+
+        allowUnsafeCombinations = getConfig().getBoolean("allow-unsafe-combinations", false);
+        
+        effectsEnabled = getConfig().getBoolean("effects.enabled", true);
+        effectSound = getConfig().getString("effects.sound", "ENTITY_PLAYER_LEVELUP");
+        effectParticles = getConfig().getString("effects.particles", "ENCHANTMENT_TABLE");
+
+        msgPrefix = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.prefix", "&e[LimitlessEnchants] &r"));
+        msgReloadSuccess = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.reload-success", "&aConfiguration reloaded successfully!"));
+        msgNoPermission = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.no-permission", "&cYou do not have permission to execute this command!"));
+        msgHelpHeader = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.help-header", "&6=== LimitlessEnchants ==="));
+        msgHelpReload = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.help-reload", "&e/le reload &f- Reload the configuration"));
     }
 
     @Override
@@ -73,16 +95,16 @@ public final class LimitlessEnchants extends JavaPlugin {
         if (command.getName().equalsIgnoreCase("limitlessenchants")) {
             if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
                 if (!sender.hasPermission("limitlessenchants.reload")) {
-                    sender.sendMessage(ChatColor.RED + "You do not have permission to execute this command!");
+                    sender.sendMessage(msgPrefix + msgNoPermission);
                     return true;
                 }
                 loadPluginConfig();
-                sender.sendMessage(ChatColor.GREEN + "[LimitlessEnchants] Configuration reloaded successfully!");
+                sender.sendMessage(msgPrefix + msgReloadSuccess);
                 return true;
             }
             // If no arguments or invalid, show help
-            sender.sendMessage(ChatColor.GOLD + "=== LimitlessEnchants ===");
-            sender.sendMessage(ChatColor.YELLOW + "/le reload " + ChatColor.WHITE + "- Reload the configuration");
+            sender.sendMessage(msgHelpHeader);
+            sender.sendMessage(msgHelpReload);
             return true;
         }
         return false;
@@ -116,6 +138,22 @@ public final class LimitlessEnchants extends JavaPlugin {
 
     public Map<String, Integer> getCustomMaxLevels() {
         return customMaxLevels;
+    }
+
+    public boolean isAllowUnsafeCombinations() {
+        return allowUnsafeCombinations;
+    }
+
+    public boolean isEffectsEnabled() {
+        return effectsEnabled;
+    }
+
+    public String getEffectSound() {
+        return effectSound;
+    }
+
+    public String getEffectParticles() {
+        return effectParticles;
     }
 }
 

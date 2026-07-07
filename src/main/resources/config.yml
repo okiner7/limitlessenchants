@@ -53,3 +53,23 @@ enchantments:
   lure: 5
   luck_of_the_sea: 5
   silk_touch: 1
+
+# --- LimitlessEnchants V2.0 Features ---
+
+# Allow players to combine mutually exclusive enchantments (e.g., Mending + Infinity, Sharpness + Smite).
+# Players also need the 'limitlessenchants.bypass.conflicts' permission for this to work.
+allow-unsafe-combinations: false
+
+# Visual and sound effects when successfully retrieving an item that bypassed limits from the anvil.
+effects:
+  enabled: true
+  sound: ENTITY_PLAYER_LEVELUP
+  particles: ENCHANTMENT_TABLE
+
+# Customizable messages. Supports color codes (&).
+messages:
+  prefix: "&e[LimitlessEnchants] &r"
+  reload-success: "&aConfiguration reloaded successfully!"
+  no-permission: "&cYou do not have permission to execute this command!"
+  help-header: "&6=== LimitlessEnchants ==="
+  help-reload: "&e/le reload &f- Reload the configuration"

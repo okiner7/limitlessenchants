@@ -19,4 +19,12 @@ permissions:
   limitlessenchants.reload:
     description: Allows reloading the LimitlessEnchants configuration.
     default: op
-
+  limitlessenchants.bypass.cost:
+    description: Allows bypassing the "Too Expensive!" repair cost limit.
+    default: true
+  limitlessenchants.bypass.level:
+    description: Allows bypassing the vanilla enchantment level caps in the anvil.
+    default: true
+  limitlessenchants.bypass.conflicts:
+    description: Allows combining mutually exclusive enchantments (if enabled in config).
+    default: true

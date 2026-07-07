@@ -4,10 +4,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -32,6 +34,7 @@ public final class AnvilListener implements Listener {
         AnvilInventory inventory = event.getInventory();
         ItemStack leftItem = inventory.getItem(0);
         ItemStack rightItem = inventory.getItem(1);
+        Player player = (Player) event.getView().getPlayer();
 
         if (leftItem == null || leftItem.getType() == Material.AIR) {
             return;
@@ -84,7 +87,7 @@ public final class AnvilListener implements Listener {
 
         // Merge enchantments
         if (rightItem != null && rightItem.getType() != Material.AIR) {
-            Map<Enchantment, Integer> mergedEnchants = mergeEnchantments(leftItem, rightItem);
+            Map<Enchantment, Integer> mergedEnchants = mergeEnchantments(leftItem, rightItem, player);
             applyEnchantments(result, mergedEnchants);
         } else {
             // Keep left enchantments on rename/repair
@@ -120,9 +123,13 @@ public final class AnvilListener implements Listener {
             }
         }
 
-        // Clamp the cost to configured max repair cost
-        int maxCost = plugin.getMaxRepairCost();
-        int finalCost = Math.min(vanillaCost, maxCost);
+        // Clamp the cost if they have bypass permission
+        int finalCost = vanillaCost;
+        if (player.hasPermission("limitlessenchants.bypass.cost")) {
+            int maxCost = plugin.getMaxRepairCost();
+            finalCost = Math.min(vanillaCost, maxCost);
+        }
+
         if (finalCost <= 0 && vanillaCost > 0) {
             finalCost = 1;
         }
@@ -137,6 +144,34 @@ public final class AnvilListener implements Listener {
                 event.getView().setRepairCost(costToSet);
             }
         });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getInventory() instanceof AnvilInventory)) {
+            return;
+        }
+        
+        if (event.getSlotType() == org.bukkit.event.inventory.InventoryType.SlotType.RESULT) {
+            ItemStack result = event.getCurrentItem();
+            if (result != null && result.getType() != Material.AIR) {
+                if (plugin.isEffectsEnabled() && event.getWhoClicked() instanceof Player) {
+                    Player player = (Player) event.getWhoClicked();
+                    
+                    // Only play effect if they bypassed vanilla limits. For simplicity, we just play it if they have the permission
+                    // and actually crafted something, but let's play it on any successful anvil use if enabled.
+                    try {
+                        org.bukkit.Sound sound = org.bukkit.Sound.valueOf(plugin.getEffectSound());
+                        player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+                    } catch (IllegalArgumentException ignored) {}
+                    
+                    try {
+                        org.bukkit.Particle particle = org.bukkit.Particle.valueOf(plugin.getEffectParticles());
+                        player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), 20, 0.5, 0.5, 0.5, 0.1);
+                    } catch (IllegalArgumentException ignored) {}
+                }
+            }
+        }
     }
 
     private boolean areCompatible(ItemStack left, ItemStack right) {
@@ -204,7 +239,7 @@ public final class AnvilListener implements Listener {
         }
     }
 
-    private Map<Enchantment, Integer> mergeEnchantments(ItemStack left, ItemStack right) {
+    private Map<Enchantment, Integer> mergeEnchantments(ItemStack left, ItemStack right, Player player) {
         Map<Enchantment, Integer> leftEnchants = getEnchantments(left);
         Map<Enchantment, Integer> rightEnchants = getEnchantments(right);
 
@@ -222,11 +257,11 @@ public final class AnvilListener implements Listener {
                 } else {
                     newLevel = Math.max(leftLevel, rightLevel);
                 }
-                merged.put(enchant, clampLevel(enchant, newLevel));
+                merged.put(enchant, clampLevel(enchant, newLevel, player));
             } else {
                 // Check compatibility and conflicts
-                if (isCompatible(left, enchant) && !hasConflict(merged, enchant)) {
-                    merged.put(enchant, clampLevel(enchant, rightLevel));
+                if (isCompatible(left, enchant) && !hasConflict(merged, enchant, player)) {
+                    merged.put(enchant, clampLevel(enchant, rightLevel, player));
                 }
             }
         }
@@ -240,7 +275,10 @@ public final class AnvilListener implements Listener {
         return enchant.canEnchantItem(item);
     }
 
-    private boolean hasConflict(Map<Enchantment, Integer> currentEnchants, Enchantment enchant) {
+    private boolean hasConflict(Map<Enchantment, Integer> currentEnchants, Enchantment enchant, Player player) {
+        if (plugin.isAllowUnsafeCombinations() && player.hasPermission("limitlessenchants.bypass.conflicts")) {
+            return false; // Skip conflict check completely
+        }
         for (Enchantment existing : currentEnchants.keySet()) {
             if (existing != enchant && existing.conflictsWith(enchant)) {
                 return true;
@@ -249,9 +287,12 @@ public final class AnvilListener implements Listener {
         return false;
     }
 
-    private int clampLevel(Enchantment enchant, int level) {
-        int maxLevel = getMaxEnchantmentLevel(enchant);
-        return Math.min(level, maxLevel);
+    private int clampLevel(Enchantment enchant, int level, Player player) {
+        if (player.hasPermission("limitlessenchants.bypass.level")) {
+            int maxLevel = getMaxEnchantmentLevel(enchant);
+            return Math.min(level, maxLevel);
+        }
+        return Math.min(level, enchant.getMaxLevel());
     }
 
     private int getMaxEnchantmentLevel(Enchantment enchant) {
