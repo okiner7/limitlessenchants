@@ -1,0 +1,22 @@
+name: LimitlessEnchants
+version: '${project.version}'
+main: net.vinio.limitlessenchants.LimitlessEnchants
+api-version: '1.21'
+author: okiner7
+description: Removes enchantment level caps and too expensive anvil limits.
+
+commands:
+  limitlessenchants:
+    description: Main command for LimitlessEnchants.
+    aliases: [le]
+    permission: limitlessenchants.use
+    usage: /<command> [reload]
+
+permissions:
+  limitlessenchants.use:
+    description: Allows using the basic commands of LimitlessEnchants.
+    default: op
+  limitlessenchants.reload:
+    description: Allows reloading the LimitlessEnchants configuration.
+    default: op
+
