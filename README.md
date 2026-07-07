@@ -4,7 +4,7 @@
 
 # LimitlessEnchants
 
-**📥 Download on:** [Modrinth](https://modrinth.com/plugin/limitlessenchants) | [SpigotMC](https://www.spigotmc.org/resources/limitlessenchants-bypass-anvil-limits-gui-1-21.136866/) | [CurseForge](https://www.curseforge.com/minecraft/bukkit-plugins/limitlessenchants)
+**🔗 Links:** [Modrinth](https://modrinth.com/plugin/limitlessenchants) | [SpigotMC](https://www.spigotmc.org/resources/limitlessenchants-bypass-anvil-limits-gui-1-21.136866/) | [CurseForge](https://www.curseforge.com/minecraft/bukkit-plugins/limitlessenchants) | [bStats](https://bstats.org/plugin/bukkit/LimitlessEnchants/31895)
 
 A lightweight, high-performance Paper/Purpur plugin designed to bypass vanilla Minecraft enchantment level limits and anvil repair restrictions. Enhance your server's gear progression by allowing players to combine and level up enchantments beyond their vanilla limits!
 
