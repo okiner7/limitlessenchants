@@ -28,7 +28,7 @@ A lightweight, high-performance Paper/Purpur plugin designed to bypass vanilla M
 |:---|:---|
 | `/limitlessenchants` (or `/le`) | Opens the interactive GUI Configuration Menu. |
 | `/le reload` | Reloads the configuration from disk. |
-| `/le lang <en\|ru>` | Instantly switch the plugin's language. |
+| `/le lang <en/ru>` | Instantly switch the plugin's language. |
 
 ---
 
