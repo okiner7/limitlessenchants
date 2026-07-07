@@ -10,54 +10,39 @@ A lightweight, high-performance Paper/Purpur plugin designed to bypass vanilla M
 
 ## 🚀 Features
 
+* **In-Game GUI Config Editor:** Adjust maximum repair costs, enchantment limits, and toggle settings directly in-game using an interactive chest menu! No need to manually edit YAML files anymore.
 * **No Enchantment Caps**: Configure custom maximum levels for every single enchantment individually (e.g., Sharpness X, Efficiency X, Fortune V).
+* **Multi-Language Support**: Fully localized in English and Russian! Switch languages on the fly via the GUI or with a command.
 * **Remove "Too Expensive!"**: Completely removes the annoying client-side anvil repair limit (replaces the 40+ level cap with a customizable maximum cost, defaulting to 39 levels).
 * **Smart Anvil Merging**: Restores correct combining math for high-level enchantments. Combining two items/books of level `X` yields level `X + 1` (up to your configured cap).
-* **Dynamic Configuration**: Reload changes on the fly using `/le reload` without needing to restart your server.
+* **Unsafe Combinations**: Allow players to combine mutually exclusive enchantments (like Mending + Infinity, or Sharpness + Smite).
+* **Visual & Sound Effects**: Satisfying level-up sounds and enchantment particles when players successfully craft overpowered gear.
 * **Highly Compatible**: Works seamlessly on Paper, Purpur, and other forks (tested on version 1.21.1+).
 * **bStats Integration**: Includes built-in anonymous metrics to help track usage statistics.
 
 ---
 
-## 🛠️ Configuration (`config.yml`)
+## 💻 Commands
 
-The default configuration file is clean, well-documented, and easy to customize:
-
-```yaml
-# The maximum repair cost allowed in the anvil (default is 39).
-# Setting this to 39 or below completely removes the "Too Expensive!" message
-# on the client and allows players to retrieve their items.
-max-repair-cost: 39
-
-# The default maximum level for unlisted enchantments (only used if use-default-max-for-unlisted is set to true).
-default-max-level: 10
-
-# Whether to use default-max-level for enchantments that are not explicitly listed below.
-# If false (recommended), unlisted enchantments will use their standard vanilla limits.
-use-default-max-for-unlisted: false
-
-# Custom maximum levels for specific enchantments.
-# Specify the enchantment name and its maximum level limit.
-# You can use namespaced keys (e.g., minecraft:sharpness) or just the key name (e.g., sharpness).
-enchantments:
-  sharpness: 10
-  protection: 10
-  efficiency: 10
-  unbreaking: 10
-  fortune: 5
-  looting: 5
-  power: 10
-  feather_falling: 10
-```
+| Command | Description |
+|:---|:---|
+| `/limitlessenchants` (or `/le`) | Opens the interactive GUI Configuration Menu. |
+| `/le reload` | Reloads the configuration from disk. |
+| `/le lang <en\|ru>` | Instantly switch the plugin's language. |
 
 ---
 
-## 💻 Commands & Permissions
+## 🔑 Permissions
 
-| Command | Description | Permission | Default |
-|:---|:---|:---|:---|
-| `/limitlessenchants` (or `/le`) | Shows plugin help / info page. | `limitlessenchants.use` | `op` |
-| `/le reload` | Reloads the configuration on the fly. | `limitlessenchants.reload` | `op` |
+You can granularly control who has access to the plugin's features:
+
+| Permission | Description | Default |
+|:---|:---|:---|
+| `limitlessenchants.use` | Access to the `/le` GUI menu. | `op` |
+| `limitlessenchants.reload` | Ability to use `/le reload` and `/le lang`. | `op` |
+| `limitlessenchants.bypass.level` | Bypass vanilla enchantment max levels. | `true` |
+| `limitlessenchants.bypass.cost` | Bypass the "Too Expensive!" anvil repair limit. | `true` |
+| `limitlessenchants.bypass.conflicts` | Combine unsafe/conflicting enchantments (if enabled). | `true` |
 
 ---
 
@@ -66,5 +51,4 @@ enchantments:
 1. Download the plugin `.jar` file.
 2. Place it in your server's `plugins/` directory.
 3. Start or restart the server.
-4. Modify `plugins/LimitlessEnchants/config.yml` to set your desired enchantment caps.
-5. Run `/le reload` to apply!
+4. Type `/le` in-game to configure your limits!
