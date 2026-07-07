@@ -1,5 +1,20 @@
 # LimitlessEnchants Configuration
 
+# --- General Settings ---
+
+# Language for messages and GUI (en or ru)
+language: en
+
+# Allow players to combine mutually exclusive enchantments (e.g., Mending + Infinity, Sharpness + Smite).
+# Players also need the 'limitlessenchants.bypass.conflicts' permission for this to work.
+allow-unsafe-combinations: false
+
+# Visual and sound effects when successfully retrieving an item that bypassed limits from the anvil.
+effects:
+  enabled: true
+  sound: ENTITY_PLAYER_LEVELUP
+  particles: ENCHANTMENT_TABLE
+
 # The maximum repair cost allowed in the anvil (default is 39).
 # Setting this to 39 or below completely removes the "Too Expensive!" message
 # on the client and allows players to retrieve their items.
@@ -11,6 +26,8 @@ default-max-level: 10
 # Whether to use default-max-level for enchantments that are not explicitly listed below.
 # If false (recommended), unlisted enchantments will use their standard vanilla limits.
 use-default-max-for-unlisted: false
+
+# --- Enchantment Limits ---
 
 # Custom maximum levels for specific enchantments.
 # Specify the enchantment name and its maximum level limit.
@@ -38,7 +55,6 @@ enchantments:
   bane_of_arthropods: 10
   knockback: 5
   fire_aspect: 5
-  looting: 5
   sweeping_edge: 5
   punch: 5
   flame: 1
@@ -53,23 +69,3 @@ enchantments:
   lure: 5
   luck_of_the_sea: 5
   silk_touch: 1
-
-# --- LimitlessEnchants V2.0 Features ---
-
-# Allow players to combine mutually exclusive enchantments (e.g., Mending + Infinity, Sharpness + Smite).
-# Players also need the 'limitlessenchants.bypass.conflicts' permission for this to work.
-allow-unsafe-combinations: false
-
-# Visual and sound effects when successfully retrieving an item that bypassed limits from the anvil.
-effects:
-  enabled: true
-  sound: ENTITY_PLAYER_LEVELUP
-  particles: ENCHANTMENT_TABLE
-
-# Customizable messages. Supports color codes (&).
-messages:
-  prefix: "&e[LimitlessEnchants] &r"
-  reload-success: "&aConfiguration reloaded successfully!"
-  no-permission: "&cYou do not have permission to execute this command!"
-  help-header: "&6=== LimitlessEnchants ==="
-  help-reload: "&e/le reload &f- Reload the configuration"

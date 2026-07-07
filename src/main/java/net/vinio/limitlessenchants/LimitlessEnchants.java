@@ -3,9 +3,13 @@ package net.vinio.limitlessenchants;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bstats.bukkit.Metrics;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,22 +27,28 @@ public final class LimitlessEnchants extends JavaPlugin {
     private boolean effectsEnabled;
     private String effectSound;
     private String effectParticles;
-    private String msgPrefix;
-    private String msgReloadSuccess;
-    private String msgNoPermission;
-    private String msgHelpHeader;
-    private String msgHelpReload;
+
+    private FileConfiguration messages;
+    private ConfigGUI configGUI;
 
     @Override
     public void onEnable() {
         // Save default config if not exists
         saveDefaultConfig();
         
+        // Save language files
+        saveResource("messages_en.yml", false);
+        saveResource("messages_ru.yml", false);
+
         // Load configuration values
         loadPluginConfig();
 
         // Register listener
         getServer().getPluginManager().registerEvents(new AnvilListener(this), this);
+
+        // Register GUI listener
+        configGUI = new ConfigGUI(this);
+        getServer().getPluginManager().registerEvents(configGUI, this);
 
         // Initialize bStats Metrics
         int pluginId = 31895;
@@ -69,7 +79,6 @@ public final class LimitlessEnchants extends JavaPlugin {
         if (getConfig().isConfigurationSection("enchantments")) {
             for (String key : getConfig().getConfigurationSection("enchantments").getKeys(false)) {
                 int maxLevel = getConfig().getInt("enchantments." + key);
-                // Store both lowercase key and namespace version if applicable
                 customMaxLevels.put(key.toLowerCase(), maxLevel);
                 if (!key.contains(":")) {
                     customMaxLevels.put("minecraft:" + key.toLowerCase(), maxLevel);
@@ -83,28 +92,75 @@ public final class LimitlessEnchants extends JavaPlugin {
         effectSound = getConfig().getString("effects.sound", "ENTITY_PLAYER_LEVELUP");
         effectParticles = getConfig().getString("effects.particles", "ENCHANTMENT_TABLE");
 
-        msgPrefix = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.prefix", "&e[LimitlessEnchants] &r"));
-        msgReloadSuccess = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.reload-success", "&aConfiguration reloaded successfully!"));
-        msgNoPermission = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.no-permission", "&cYou do not have permission to execute this command!"));
-        msgHelpHeader = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.help-header", "&6=== LimitlessEnchants ==="));
-        msgHelpReload = ChatColor.translateAlternateColorCodes('&', getConfig().getString("messages.help-reload", "&e/le reload &f- Reload the configuration"));
+        String lang = getConfig().getString("language", "en");
+        File langFile = new File(getDataFolder(), "messages_" + lang + ".yml");
+        if (!langFile.exists()) {
+            langFile = new File(getDataFolder(), "messages_en.yml");
+        }
+        messages = YamlConfiguration.loadConfiguration(langFile);
+    }
+
+    public String getMessage(String key) {
+        if (messages == null) return key;
+        String msg = messages.getString(key, key);
+        return ChatColor.translateAlternateColorCodes('&', msg);
+    }
+
+    public String getMessage(String key, String... replacements) {
+        String msg = getMessage(key);
+        for (int i = 0; i < replacements.length; i++) {
+            msg = msg.replace("{" + i + "}", replacements[i]);
+        }
+        return msg;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("limitlessenchants")) {
-            if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-                if (!sender.hasPermission("limitlessenchants.reload")) {
-                    sender.sendMessage(msgPrefix + msgNoPermission);
+            if (args.length > 0) {
+                if (args[0].equalsIgnoreCase("reload")) {
+                    if (!sender.hasPermission("limitlessenchants.reload")) {
+                        sender.sendMessage(getMessage("prefix") + getMessage("no-permission"));
+                        return true;
+                    }
+                    loadPluginConfig();
+                    sender.sendMessage(getMessage("prefix") + getMessage("reload-success"));
                     return true;
                 }
-                loadPluginConfig();
-                sender.sendMessage(msgPrefix + msgReloadSuccess);
-                return true;
+                if (args[0].equalsIgnoreCase("lang") && args.length == 2) {
+                    if (!sender.hasPermission("limitlessenchants.reload")) {
+                        sender.sendMessage(getMessage("prefix") + getMessage("no-permission"));
+                        return true;
+                    }
+                    String newLang = args[1].toLowerCase();
+                    if (newLang.equals("en") || newLang.equals("ru")) {
+                        getConfig().set("language", newLang);
+                        saveConfig();
+                        loadPluginConfig();
+                        sender.sendMessage(getMessage("prefix") + getMessage("lang-success"));
+                    } else {
+                        sender.sendMessage(getMessage("prefix") + getMessage("lang-invalid"));
+                    }
+                    return true;
+                }
             }
-            // If no arguments or invalid, show help
-            sender.sendMessage(msgHelpHeader);
-            sender.sendMessage(msgHelpReload);
+            
+            // Open GUI for players
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (player.hasPermission("limitlessenchants.use")) {
+                    configGUI.openMainMenu(player);
+                    return true;
+                } else {
+                    player.sendMessage(getMessage("prefix") + getMessage("no-permission"));
+                    return true;
+                }
+            }
+
+            // If no arguments or invalid (Console fallback)
+            sender.sendMessage(getMessage("help-header"));
+            sender.sendMessage(getMessage("help-reload"));
+            sender.sendMessage(getMessage("help-lang"));
             return true;
         }
         return false;
@@ -113,13 +169,19 @@ public final class LimitlessEnchants extends JavaPlugin {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (command.getName().equalsIgnoreCase("limitlessenchants")) {
+            List<String> completions = new ArrayList<>();
             if (args.length == 1) {
-                List<String> completions = new ArrayList<>();
                 if ("reload".startsWith(args[0].toLowerCase()) && sender.hasPermission("limitlessenchants.reload")) {
                     completions.add("reload");
                 }
-                return completions;
+                if ("lang".startsWith(args[0].toLowerCase()) && sender.hasPermission("limitlessenchants.reload")) {
+                    completions.add("lang");
+                }
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("lang") && sender.hasPermission("limitlessenchants.reload")) {
+                if ("en".startsWith(args[1].toLowerCase())) completions.add("en");
+                if ("ru".startsWith(args[1].toLowerCase())) completions.add("ru");
             }
+            return completions;
         }
         return Collections.emptyList();
     }
@@ -156,4 +218,3 @@ public final class LimitlessEnchants extends JavaPlugin {
         return effectParticles;
     }
 }
-
